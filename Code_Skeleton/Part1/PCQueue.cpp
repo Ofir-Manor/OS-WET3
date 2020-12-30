@@ -16,12 +16,13 @@ template<typename T>
 void PCQueue<T>::push(const T &item) {
     this->producer_lock();
     this->pcQueue.push(item);
-    this->sem.up();
     this->producer_unlock();
+    this->sem.up();
 }
 
 template<typename T>
 T PCQueue<T>::pop(){
+    this->sem.down()
     this->consumer_lock();
     T item = this->pcQueue.pop();
     this->consumer_unlock();
@@ -55,7 +56,6 @@ void PCQueue<T>::consumer_lock() {
     while (this->producers_inside >0 || this->producers_waiting >0){
         pthread_cond_wait(&this->consume_allowed, &this->lock);
     }
-    this->sem.down();
     this->consumers_inside++;
     pthread_mutex_unlock(&this->lock);
 }
