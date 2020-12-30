@@ -1,6 +1,7 @@
 #ifndef __THREAD_H
 #define __THREAD_H
-#include "Headers.hpp"
+
+#include "../Part1/Headers.hpp"
 class Thread
 {
 public:

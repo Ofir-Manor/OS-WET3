@@ -39,6 +39,23 @@ void Game::_destroy_game(){
 	// Testing of your implementation will presume all threads are joined here
 }
 
+//TODO Add all the other methods
+Game::Game(game_params p) {
+    this->m_gen_num = p.n_gen;
+    this->m_thread_num = p.n_thread;
+    this->print_on = p.print_on;
+    this->interactive_on = p.interactive_on;
+
+    vector<string> matrix_rows = read_line(p.filename);
+    this->matrix_height = matrix_rows.size();
+    this->matrix_width = matrix_rows[1].size();
+
+
+    this->m_gen_hist =new vector<float>;
+    this->m_tile_hist = new vector<float>;
+    this->m_threadpool = new vector<Thread*>;
+}
+
 /*--------------------------------------------------------------------------------
 								
 --------------------------------------------------------------------------------*/
