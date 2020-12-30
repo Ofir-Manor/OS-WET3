@@ -4,12 +4,24 @@
 
 template<typename T>
 PCQueue<T>::PCQueue() {
+    this->sem = new Semaphore();
+    this->pcQueue = new queue<T>;
+    this->consumers_inside=0;
+    this->producers_inside=0;
+    this->producers_waiting=0;
 
+    pthread_mutex_init(&this->lock, nullptr);
+    pthread_cond_init(&this->consume_allowed, nullptr);
+    pthread_cond_init(&this->produce_allowed, nullptr);
 }
 
 template<typename T>
 PCQueue<T>::~PCQueue() {
-
+    delete this->sem;
+    delete this->pcQueue;
+    pthread_mutex_destroy(&this->lock);
+    pthread_cond_destroy(&this->consume_allowed);
+    pthread_cond_destroy(&this->produce_allowed);
 }
 
 template<typename T>
