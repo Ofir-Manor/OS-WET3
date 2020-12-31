@@ -19,17 +19,17 @@ Semaphore::~Semaphore() {
 
 void Semaphore::up() {
     pthread_mutex_lock(&this->mutex);
-    this->blocker++;
+    this->counter++;
     pthread_cond_signal(&this->cond);
     pthread_mutex_unlock(&this->mutex);
 }
 
 void Semaphore::down() {
     pthread_mutex_lock(&this->mutex);
-    while (this.blocker == 0){
+    while (this.counter == 0){
         pthread_cond_wait(&this->cond,&this->mutex);
     }
-    this->blocker--;
+    this->counter--;
     pthread_mutex_unlock(&this->mutex);
 }
 
