@@ -14,11 +14,13 @@ public:
 	/** Returns true if the thread was successfully started, false if there was an error starting the thread */
 	bool start()
 	{
+	   return (pthread_create(&this->m_thread, nullptr, entry_func) == 0);
 	}
 
 	/** Will not return until the internal thread has exited. */
 	void join()
 	{
+	    pthread_join(this->m_thread, nullptr);
 	}
 
 	/** Returns the thread_id **/

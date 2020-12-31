@@ -29,13 +29,14 @@ void Game::_init_game() {
     //Create Game Fields (Currently in constructor)
 
 	// Start the threads
+	//threads will try to pop and use the tasks in PCQueue
 
 	// Testing of your implementation will presume all threads are started here
 
 }
 
 void Game::_step(uint curr_gen) {
-	// Push jobs to queue
+	// Push jobs to queue: PCQ will hold tasks which will be functions to perform. Each function will get a class with all the needed information
 	// Wait for the workers to finish calculating 
 	// Swap pointers between current and next field 
 }
