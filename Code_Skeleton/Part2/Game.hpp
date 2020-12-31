@@ -62,9 +62,9 @@ protected: // All members here are protected, instead of private for testing pur
 	// TODO: Add in your variables and synchronization primitives
 	uint matrix_height; //keeps the height of the matrix
 	uint matrix_width;  // keeps the width of the matrix
-	vector<string> matrix_vecotr; //keeps the matrix as a vector of rows
 
-	uint first_matrix[][];
+	uint curr_matrix[][];
+	uint next_matrix[][];
 
 };
 #endif

@@ -7,7 +7,7 @@ class Thread
 public:
 	Thread(uint thread_id) 
 	{
-		// Only places thread_id 
+		this->thread_id = thread_id;
 	} 
 	virtual ~Thread() {} // Does nothing 
 
@@ -24,7 +24,7 @@ public:
 	/** Returns the thread_id **/
 	uint thread_id()
 	{
-
+        return this->thread_id;
 	}
 protected:
 	/** Implement this method in your subclass with the code you want your thread to run. */

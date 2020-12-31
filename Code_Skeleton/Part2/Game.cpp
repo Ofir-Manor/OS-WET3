@@ -21,10 +21,17 @@ void Game::run() {
 }
 
 void Game::_init_game() {
-	// Create threads
-	// Create game fields
+
+    // Create threads
+    for (uint i = 0; i < this->m_thread_num; ++i) {
+        this->m_threadpool.push_back(Thread(i));
+    }
+    //Create Game Fields (Currently in constructor)
+
 	// Start the threads
+
 	// Testing of your implementation will presume all threads are started here
+
 }
 
 void Game::_step(uint curr_gen) {
@@ -37,13 +44,19 @@ void Game::_destroy_game(){
 	// Destroys board and frees all threads and resources 
 	// Not implemented in the Game's destructor for testing purposes. 
 	// Testing of your implementation will presume all threads are joined here
+	delete this->curr_matrix;
+	delete this->next_matrix;
+	delete this->m_tile_hist;
+	delete this->m_gen_hist;
+
+	//delete threads
 }
 
 //TODO Add all the other methods
 Game::Game(game_params p) {
     //create the first matrix as vector of strings
 
-    this->matrix_vecotr = utils::read_line(const p.filename);
+    vector<string> matrix_vecotr = utils::read_line(const p.filename);
     this->matrix_height = matrix_rows.size();
     this->matrix_width = (matrix_rows[0].size()/2) +1;
 
