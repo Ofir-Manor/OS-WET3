@@ -60,8 +60,11 @@ protected: // All members here are protected, instead of private for testing pur
 	bool print_on; // Allows the printing of the board. Turn this off when you are checking performance (Dry 3, last question)
 	
 	// TODO: Add in your variables and synchronization primitives
-	uint matrix_height;
-	uint matrix_width;
+	uint matrix_height; //keeps the height of the matrix
+	uint matrix_width;  // keeps the width of the matrix
+	vector<string> matrix_vecotr; //keeps the matrix as a vector of rows
+
+	uint first_matrix[][];
 
 };
 #endif

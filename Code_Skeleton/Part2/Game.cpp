@@ -41,15 +41,30 @@ void Game::_destroy_game(){
 
 //TODO Add all the other methods
 Game::Game(game_params p) {
+    //create the first matrix as vector of strings
+
+    this->matrix_vecotr = utils::read_line(const p.filename);
+    this->matrix_height = matrix_rows.size();
+    this->matrix_width = (matrix_rows[0].size()/2) +1;
+
+    this->first_matrix = new uint[matrix_height][matrix_width];
+
+    uint temp;
+    char space = ' ';
+
+    for (int i=0; i<matrix_height; i++){
+        vector<string> matrix_row = utils::split(matrix_vecotr[i], const space);
+        for (int j=0; j<matrix_width; j++){
+            string cell = matrix_row[j];
+            temp = std::stoi(cell);
+            first_matrix[i][j] = temp;
+        }
+    }
+
     this->m_gen_num = p.n_gen;
-    this->m_thread_num = p.n_thread;
+    this->m_thread_num = std::min(const p.n_thread, const this->matrix_height);
     this->print_on = p.print_on;
     this->interactive_on = p.interactive_on;
-
-    vector<string> matrix_rows = read_line(p.filename);
-    this->matrix_height = matrix_rows.size();
-    this->matrix_width = matrix_rows[1].size();
-
 
     this->m_gen_hist =new vector<float>;
     this->m_tile_hist = new vector<float>;
