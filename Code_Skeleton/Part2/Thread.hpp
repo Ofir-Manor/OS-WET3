@@ -2,6 +2,7 @@
 #define __THREAD_H
 
 #include "../Part1/Headers.hpp"
+#include "Task.hpp"
 class Thread
 {
 public:
@@ -37,5 +38,29 @@ private:
 	static void * entry_func(void * thread) { ((Thread *)thread)->thread_workload(); return NULL; }
 	pthread_t m_thread;
 };
+
+class Tasked_thread : public Thread{
+
+
+    void thread_workload(Task t) override{
+        uint first_row = t.get_first_row();
+        uint last_row = t.get_last_row();
+        uint phase = t.get_phase();
+
+        for (int i = first_row; i < last_row; ++i) {
+            for (int j = 0; j < t.get_width(); ++j) {
+                if (phase == 1){
+                    //do what needs to be done in phase one from curr_matrix[i][j] to next_matrix[i][j]
+                }
+                if (phase == 2){
+                    //do what needs to be done in phase two from curr_matrix[i][j] to next_matrix[i][j]
+                }
+
+            }
+
+        }
+    }
+};
+
 
 #endif

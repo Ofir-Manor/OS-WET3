@@ -3,6 +3,7 @@
 
 #include "Thread.hpp"
 #include "utils.hpp"
+#include "Task.hpp"
 
 /*--------------------------------------------------------------------------------
 								  Species colors
