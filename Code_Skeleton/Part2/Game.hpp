@@ -67,5 +67,6 @@ protected: // All members here are protected, instead of private for testing pur
 	uint curr_matrix[][];
 	uint next_matrix[][];
 
+	PCQueue<Task> task_queue;
 };
 #endif

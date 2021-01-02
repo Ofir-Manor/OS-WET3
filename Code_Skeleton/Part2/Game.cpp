@@ -24,21 +24,68 @@ void Game::_init_game() {
 
     // Create threads
     for (uint i = 0; i < this->m_thread_num; ++i) {
-        this->m_threadpool.push_back(Thread(i));
+        this->m_threadpool.push_back(Tasked_thread(i));
     }
     //Create Game Fields (Currently in constructor)
 
 	// Start the threads
-	//threads will try to pop and use the tasks in PCQueue
+    for (uint i = 0; i < this->m_thread_num; ++i) {
+        this->m_threadpool[i]->start();
+    }
 
 	// Testing of your implementation will presume all threads are started here
 
 }
 
 void Game::_step(uint curr_gen) {
-	// Push jobs to queue: PCQ will hold tasks which will be functions to perform. Each function will get a class with all the needed information
-	// Wait for the workers to finish calculating 
-	// Swap pointers between current and next field 
+
+    // Push jobs to queue: PCQ will hold tasks which will be functions to perform. Each function will get a class with all the needed information
+    uint thread_portion = this->matrix_height/this->m_thread_num;
+
+    //phase 1
+
+    for (uint i = 0; i < this->matrix_height; i += thread_portion){
+
+        //add the remainder rows to the last thread
+        uint last_row = i+thread_portion;
+        if (last_row + thread_portion > this->matrix_height)
+        {
+            last_row = this->matrix_height;
+        }
+
+        //create the new task
+        Task t = new Task(&this->curr_matrix, &this->next_matrix, i, last_row, this->matrix_height, this->matrix_width, 1);
+        //put the task in the queue
+        this->task_queue.push(t);
+    }
+
+	// Wait for the workers to finish calculating
+
+    // Swap pointers between current and next field
+	this->curr_matrix = this->next_matrix;
+
+    //phase 2
+
+    for (uint i = 0; i < this->matrix_height; i += thread_portion){
+
+        //add the remainder rows to the last thread
+        uint last_row = i+thread_portion;
+        if (last_row + thread_portion > this->matrix_height)
+        {
+            last_row = this->matrix_height;
+        }
+
+        //create the new task
+        Task t = new Task(&this->curr_matrix, &this->next_matrix, i, last_row, this->matrix_height, this->matrix_width, 2);
+        //put the task in the queue
+        this->task_queue.push(t);
+    }
+
+    // Wait for the workers to finish calculating
+
+    // Swap pointers between current and next field
+    this->curr_matrix = this->next_matrix;
+
 }
 
 void Game::_destroy_game(){
@@ -83,6 +130,8 @@ Game::Game(game_params p) {
     this->m_gen_hist =new vector<float>;
     this->m_tile_hist = new vector<float>;
     this->m_threadpool = new vector<Thread*>;
+
+    this->task_queue = new PCQueue<Task>();
 }
 
 /*--------------------------------------------------------------------------------

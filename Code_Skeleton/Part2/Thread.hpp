@@ -3,6 +3,7 @@
 
 #include "../Part1/Headers.hpp"
 #include "Task.hpp"
+#include "../Part1/PCQueue.hpp"
 class Thread
 {
 public:
@@ -41,23 +42,36 @@ private:
 
 class Tasked_thread : public Thread{
 
+    Tasked_thread::Tasked_thread(uint thread_id): Thread(uint thread_id){
+    }
 
-    void thread_workload(Task t) override{
-        uint first_row = t.get_first_row();
-        uint last_row = t.get_last_row();
-        uint phase = t.get_phase();
+    Tasked_thread::~Tasked_thread)(){
+    }
 
-        for (int i = first_row; i < last_row; ++i) {
-            for (int j = 0; j < t.get_width(); ++j) {
-                if (phase == 1){
-                    //do what needs to be done in phase one from curr_matrix[i][j] to next_matrix[i][j]
-                }
-                if (phase == 2){
-                    //do what needs to be done in phase two from curr_matrix[i][j] to next_matrix[i][j]
+    void thread_workload(PCQueue<Task> pcq) override {
+        //perform from init to end
+        while (1) {
+            //take task out of pcqueue (if non then pcqueue should stop you
+            Task t = pcq.pop();
+
+            //take out relevant infromation out of task
+            uint first_row = t.get_first_row();
+            uint last_row = t.get_last_row();
+            uint phase = t.get_phase();
+
+            //perform the phase
+            for (int i = first_row; i < last_row; ++i) {
+                for (int j = 0; j < t.get_width(); ++j) {
+                    if (phase == 1) {
+                        //do what needs to be done in phase one from curr_matrix[i][j] to next_matrix[i][j]
+                    }
+                    if (phase == 2) {
+                        //do what needs to be done in phase two from curr_matrix[i][j] to next_matrix[i][j]
+                    }
+
                 }
 
             }
-
         }
     }
 };
