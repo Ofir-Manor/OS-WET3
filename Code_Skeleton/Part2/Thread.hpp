@@ -14,9 +14,10 @@ public:
 	virtual ~Thread() {} // Does nothing 
 
 	/** Returns true if the thread was successfully started, false if there was an error starting the thread */
+	//TODO: Find out how to transfer the PCQueue
 	bool start()
 	{
-	   return (pthread_create(&this->m_thread, nullptr, entry_func) == 0);
+	   return (pthread_create(&this->m_thread, nullptr, entry_func, PCQueue<Task>) == 0);
 	}
 
 	/** Will not return until the internal thread has exited. */
@@ -51,22 +52,82 @@ class Tasked_thread : public Thread{
     void thread_workload(PCQueue<Task> pcq) override {
         //perform from init to end
         while (1) {
-            //take task out of pcqueue (if non then pcqueue should stop you
+
+            //take task out of pcqueue (if non then pcqueue should stop you)
             Task t = pcq.pop();
 
             //take out relevant infromation out of task
-            uint first_row = t.get_first_row();
-            uint last_row = t.get_last_row();
-            uint phase = t.get_phase();
+            uint count;
+            uint sum;
+            uint arr[8] = {0};
 
-            //perform the phase
-            for (int i = first_row; i < last_row; ++i) {
-                for (int j = 0; j < t.get_width(); ++j) {
-                    if (phase == 1) {
-                        //do what needs to be done in phase one from curr_matrix[i][j] to next_matrix[i][j]
-                    }
-                    if (phase == 2) {
-                        //do what needs to be done in phase two from curr_matrix[i][j] to next_matrix[i][j]
+            //foreach cell in threads matrix
+            for (int i = t->first_row; i < t->last_row; ++i) {
+                for (int j = 0; j < t->max_width(); ++j) {
+
+                    count =0;
+                    sum =0;
+                    //check the surrounding cells
+                    for (int k = -1; k < 2; ++k) {
+                        for (int l = -1; l < ; ++l) {
+
+                            //check if inside bounds
+                            if ( (i + k) < 0 || (i + k) > t->max_height || (j + l) < 0 || (j+l) > t->max_width){
+                                continue;
+                            }
+
+                            //add the cell and count
+                            if(t->curr_matrix[i+k][j+l] > 0) {
+                                count++;
+                                sum += t->curr_matrix[i + k][j + l];
+                                arr[t->curr_matrix[i+k][j+l]] ++;
+                            }
+
+                            //actions for phase 1
+                            if(t->phase == 1){
+
+                                //the cell is dead and it has three neighbors
+                                if (t->curr_matrix[i][j] == 0 && count == 3)
+                                {
+                                    uint max = 0;
+                                    uint dominant = 0;
+                                    //find dominant cell color
+                                    for (int m = 0; m < 8; ++m) {
+                                        if(arr[m] > max){
+                                            dominant = m;
+                                        }
+                                    }
+
+                                    t->next_matrix[i][j] = dominant;
+                                }
+
+                                //if the cell is alive and has two or three neighbors
+                                //because we counted the current cell we add to count 1 in order to keep alive
+                                else if (t->curr_matrix[i][j] > 0 && (count == 4 || count == 3)){
+                                    t->next_matrix[i][j] = t->curr_matrix[i][j];
+                                }
+
+                                //if non of the above
+                                else {
+                                    t->next_matrix[i][j] = 0;
+                                }
+                            }
+
+                            //actions for phase 2
+                            else if (t->phase == 2){
+
+                                //if the cell is alive, amke is the average of surrounding living cells
+                                if (t->curr_matrix[i][j] > 0){
+                                    t->next_matrix[i][j] = sum/count;
+                                }
+
+                                //if the cell is dead then keep it dead
+                                else{
+                                    t->next_matrix[i][j] = 0;
+                                }
+                            }
+
+                        }
                     }
 
                 }
