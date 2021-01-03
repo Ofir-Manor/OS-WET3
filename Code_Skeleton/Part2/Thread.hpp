@@ -56,7 +56,7 @@ class Tasked_thread : public Thread{
             //take task out of pcqueue (if non then pcqueue should stop you)
             Task t = pcq.pop();
 
-            //take out relevant infromation out of task
+            //take out relevant information out of task
             uint count;
             uint sum;
             uint arr[8] = {0};
