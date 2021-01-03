@@ -33,6 +33,13 @@ void Game::_init_game() {
         this->m_threadpool[i]->start();
     }
 
+    // create task queue
+    this->task_queue = new PCQueue<Task>();
+
+    // create and initialize counter of finished tasks
+    this->num_of_finished_tasks = new int;
+    *this->num_of_finished_tasks = 0;
+
 	// Testing of your implementation will presume all threads are started here
 
 }
@@ -43,6 +50,9 @@ void Game::_step(uint curr_gen) {
     uint thread_portion = this->matrix_height/this->m_thread_num;
 
     //phase 1
+
+    //reset finished tasks counter
+    *this->num_of_finished_tasks = 0;
 
     for (uint i = 0; i < this->matrix_height; i += thread_portion){
 
@@ -59,10 +69,12 @@ void Game::_step(uint curr_gen) {
         this->task_queue.push(t);
     }
 
-	// Wait for the workers to finish calculating
+	// Wait for the workers to finish calculating phase 1
+    while(*this->num_of_finished_tasks<this->m_thread_num);
 
     // Swap pointers between current and next field
-	this->curr_matrix = this->next_matrix;
+    this->curr_matrix = this->next_matrix;
+
 
     //phase 2
 
@@ -81,7 +93,7 @@ void Game::_step(uint curr_gen) {
         this->task_queue.push(t);
     }
 
-    // Wait for the workers to finish calculating
+    // Wait for the workers to finish calculating phase 2
 
     // Swap pointers between current and next field
     this->curr_matrix = this->next_matrix;
@@ -96,6 +108,8 @@ void Game::_destroy_game(){
 	delete this->next_matrix;
 	delete this->m_tile_hist;
 	delete this->m_gen_hist;
+	delete this->task_queue;
+	delete this->num_of_finished_tasks;
 
 	//delete threads
 }
