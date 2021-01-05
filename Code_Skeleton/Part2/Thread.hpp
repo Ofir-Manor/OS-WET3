@@ -153,6 +153,7 @@ public:
             //task is completed
             *num_of_finished_tasks++;
 
+            //TODO maybe its supposed to be (time for phase1 + time for phase2)?
             auto thread_end = std::chrono::system_clock::now();
             m_tile_hist.push_back((float)std::chrono::duration_cast<std::chrono::microseconds>(thread_end - thread_start).count());
         }
