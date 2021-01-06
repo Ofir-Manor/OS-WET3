@@ -37,7 +37,7 @@ class Thread
         //TODO: Find out how to transfer the PCQueue
         bool start()
         {
-           return (pthread_create(&(this->m_thread), nullptr, (this->entry_func), (void*) &this)) == 0);
+           return (pthread_create(&(this->m_thread), nullptr, (this->entry_func), (void*) this) == 0);
         }
 
         /** Will not return until the internal thread has exited. */
