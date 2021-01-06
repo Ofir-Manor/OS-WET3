@@ -17,22 +17,18 @@ Game::Game(game_params p) {
     this->m_gen_hist = vector<double>();
     this->m_tile_hist = vector<double>();
     this->m_threadpool = vector<Thread*>();
+    this->lock_vector = vector<pthread_mutex_t>();
 
-    this->task_queue = PCQueue<Task>();
+     this->task_queue = new PCQueue<Task>;
 }
 
  void Game::run() {
 
      _init_game(); // Starts the threads and all other variables you need
-     //TODO: delete this after debugging
-     std::cout << "I have started the game" << std::endl;
 
      print_board("Initial Board");
 
      for (uint i = 0; i < m_gen_num; ++i) {
-
-         //TODO: delete this after debugging
-         std::cout << "I am in generation " << i << std::endl;
 
          auto gen_start = std::chrono::system_clock::now();
          _step(i); // Iterates a single generation
@@ -46,16 +42,15 @@ Game::Game(game_params p) {
 
 void Game::_init_game() {
 
-    //TODO maybe combine creation and start (only one for loop)
-
     // Create threads
     for (uint i = 0; i < this->m_thread_num; ++i) {
         this->m_threadpool.push_back(new Tasked_thread(i, this->task_queue, this->num_of_finished_tasks, this->m_tile_hist));
     }
     //Create Game Fields
     char delimiter = ' '; // the delimiter is space
-    this->curr_matrix = new int_mat(utils::read_file(this->filename, delimiter));
-    this->next_matrix = new int_mat(utils::read_file(this->filename, delimiter));
+    int_mat field = int_mat (utils::read_file(this->filename, delimiter));
+    this->curr_matrix = new int_mat(field);
+    this->next_matrix = new int_mat(field);
 
     //Updates fields after create game fields
     this->matrix_height = (*curr_matrix).size();
@@ -67,12 +62,12 @@ void Game::_init_game() {
         this->m_threadpool[i]->start();
     }
 
-    // create task queue
-    this->task_queue = PCQueue<Task>();
 
     // create and initialize counter of finished tasks
     this->num_of_finished_tasks = new uint;
     *this->num_of_finished_tasks = 0;
+
+    this->lock_vector = vector<pthread_mutex_t>(this->m_thread_num);
 
 	// Testing of your implementation will presume all threads are started here
 
@@ -81,69 +76,98 @@ void Game::_init_game() {
 void Game::_step(uint curr_gen) {
 
     // Push jobs to queue: PCQ will hold tasks which will be functions to perform. Each function will get a class with all the needed information
-    uint thread_portion = this->matrix_height/this->m_thread_num;
+    uint thread_portion = this->matrix_height / this->m_thread_num;
 
     //phase 1
-    //TODO: delete this after debugging
-    std::cout << "I am in phase 1 of generation " << curr_gen << std::endl;
 
     //reset finished tasks counter
     *this->num_of_finished_tasks = 0;
 
+    //lock all locks before handing out tasks
+    for (uint i = 0; i < this->m_thread_num; i++) {
+        pthread_mutex_lock(&this->lock_vector[i]);
+    }
+
     //add the tasks to PCQueue (Threads should automatically receive tasks and start working)
-    for (uint i = 0; i < this->matrix_height; i += thread_portion){
+    for (uint i = 0; i < this->m_thread_num; i++) {
 
         //add the remainder rows to the last thread
-        uint last_row = i+thread_portion;
-        if (last_row + thread_portion > this->matrix_height)
-        {
+        uint last_row = (i + 1) * thread_portion;
+        if (last_row + thread_portion > this->matrix_height) {
             last_row = this->matrix_height;
         }
 
         //create the new task
-        Task t = Task(this->curr_matrix, this->next_matrix, i, last_row, this->matrix_height, this->matrix_width, 1);
+        Task t = Task(this->curr_matrix, this->next_matrix, i * thread_portion, last_row, this->matrix_height,
+                      this->matrix_width, 1, &this->lock_vector[i]);
+
         //put the task in the queue
-        this->task_queue.push(t);
+        this->task_queue->push(t);
     }
 
-	// Wait for the workers to finish calculating phase 1
-    while(*this->num_of_finished_tasks < this->m_thread_num){};
+    for (uint i = 0; i < this->m_thread_num; i++) {
+        pthread_mutex_lock(&this->lock_vector[i]);
+    }
 
     // Swap pointers between current and next field
+    int_mat *temp = this->curr_matrix;
     this->curr_matrix = this->next_matrix;
+    this->next_matrix = temp;
+
+
+    for (uint i = 0; i < this->m_thread_num; i++) {
+        pthread_mutex_unlock(&this->lock_vector[i]);
+    }
 
     //phase 2
 
-    //TODO: delete this after debugging
-    std::cout << "I am in phase 2 of generation " << curr_gen << std::endl;
+    //TODO: delete after debugging
+    int i = 2;
 
     //reset finished tasks counter
     *this->num_of_finished_tasks = 0;
 
+    //lock all locks before handing out tasks
+    for (uint i = 0; i < this->m_thread_num; i++) {
+        pthread_mutex_lock(&this->lock_vector[i]);
+    }
+
     //add the tasks to PCQueue (Threads should automatically receive tasks and start working)
-    for (uint i = 0; i < this->matrix_height; i += thread_portion){
+    for (uint i = 0; i < this->m_thread_num; i++) {
 
         //add the remainder rows to the last thread
-        uint last_row = i+thread_portion;
-        if (last_row + thread_portion > this->matrix_height)
-        {
+        uint last_row = (i + 1) * thread_portion;
+        if (last_row + thread_portion > this->matrix_height) {
             last_row = this->matrix_height;
         }
 
         //create the new task
-        Task t = Task(this->curr_matrix, this->next_matrix, i, last_row, this->matrix_height, this->matrix_width, 2);
+        Task t = Task(this->curr_matrix, this->next_matrix, i * thread_portion, last_row, this->matrix_height,
+                      this->matrix_width, 2, &this->lock_vector[i]);
+
         //put the task in the queue
-        this->task_queue.push(t);
+        this->task_queue->push(t);
     }
 
-    // Wait for the workers to finish calculating phase 2
-    while(*this->num_of_finished_tasks < this->m_thread_num){};
+    // Wait for the workers to finish calculating phase 1
+    //  while(*this->num_of_finished_tasks < this->m_thread_num){
+    //TODO: Delete after debugging
+    //  std::cout << "I am stuck here forever and my value is " << *this->num_of_finished_tasks << endl;
+    // };
+
+    for (uint i = 0; i < this->m_thread_num; i++) {
+        pthread_mutex_lock(&this->lock_vector[i]);
+    }
 
     // Swap pointers between current and next field
+    int_mat *temp_matrix = this->curr_matrix;
     this->curr_matrix = this->next_matrix;
+    this->next_matrix = temp_matrix;
 
+    for (uint i = 0; i < this->m_thread_num; i++) {
+        pthread_mutex_unlock(&this->lock_vector[i]);
+    }
 }
-
 void Game::_destroy_game(){
 	// Destroys board and frees all threads and resources 
 	// Not implemented in the Game's destructor for testing purposes. 
@@ -177,14 +201,10 @@ Game::~Game() {}
 
      if(print_on){
 
-         //TODO: delete this after debugging
-         std::cout << "Print on in on" << std::endl;
          // Clear the screen, to create a running animation
          if(interactive_on)
              system("clear");
 
-         //TODO: delete this after debugging
-         std::cout << "interactive is on" << std::endl;
 
          // Print small header if needed
          if (header != nullptr)

@@ -3,7 +3,9 @@
 #include "Headers.hpp"
 // Synchronization Warm up 
 class Semaphore {
-private:
+
+    //TODO: make private after
+public:
     int counter;
     pthread_mutex_t mutex;
     pthread_cond_t cond;

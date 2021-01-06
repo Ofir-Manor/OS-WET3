@@ -11,7 +11,7 @@ class Thread
         /** Implement this method in your subclass with the code you want your thread to run. */
         virtual void thread_workload() = 0;
         uint m_thread_id; // A number from 0 -> Number of threads initialized, providing a simple numbering for you to use
-        PCQueue<Task> task_queue;
+        PCQueue<Task> *task_queue;
         uint *num_of_finished_tasks;
         vector<double> m_tile_hist;
 
@@ -24,7 +24,7 @@ class Thread
 
 
     public:
-        Thread(uint thread_id, PCQueue<Task> task_queue, uint *num_of_finished_tasks, vector<double> m_tile_hist)
+        Thread(uint thread_id, PCQueue<Task> *task_queue, uint *num_of_finished_tasks, vector<double> m_tile_hist)
         {
             this->m_thread_id = thread_id;
             this->task_queue = task_queue;
@@ -37,9 +37,6 @@ class Thread
         //TODO: Find out how to transfer the PCQueue
         bool start()
         {
-            //TODO: Delete after debugging
-            std::cout << "Thread "  << this->m_thread_id << " is started" << std::endl;
-
            return (pthread_create(&(this->m_thread), nullptr, (this->entry_func), (void*) this) == 0);
         }
 
@@ -61,7 +58,7 @@ class Tasked_thread : public Thread{
 
 public:
 
-    Tasked_thread(uint thread_id, PCQueue<Task> task_queue, uint *num_of_finished_tasks, vector<double> m_tile_hist):
+    Tasked_thread(uint thread_id, PCQueue<Task> *task_queue, uint *num_of_finished_tasks, vector<double> m_tile_hist):
     Thread(thread_id, task_queue, num_of_finished_tasks, m_tile_hist)
     {
     }
@@ -71,13 +68,10 @@ public:
     }
 
     void thread_workload() override {
-        //TODO: Delete after debugging
-        std::cout << "I have arrived at my function" << std::endl;
         //perform from init to end
         while (1) {
             //take task out of pcqueue (if non then pcqueue should stop you)
-            Task t = this->task_queue.pop();
-
+            Task t = (*this->task_queue).pop();
 
             auto thread_start = std::chrono::system_clock::now();
 
@@ -165,8 +159,9 @@ public:
                 }
 
             }
-            //task is completed
-            *num_of_finished_tasks++;
+            //*num_of_finished_tasks++;
+            pthread_mutex_unlock(t.mutex);
+           std::cout << "The task is finished" << endl;
 
             //TODO maybe its supposed to be (time for phase1 + time for phase2)?
             auto thread_end = std::chrono::system_clock::now();

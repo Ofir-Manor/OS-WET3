@@ -57,9 +57,11 @@ class Game {
 
 		int_mat *curr_matrix;
 		int_mat *next_matrix;
-		PCQueue<Task> task_queue;
+		PCQueue<Task>* task_queue;
 		uint *num_of_finished_tasks;
 		string filename;
+
+		vector<pthread_mutex_t> lock_vector;
 
 
 	public:

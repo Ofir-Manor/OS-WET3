@@ -1,12 +1,12 @@
 #include "Semaphore.hpp"
 
-Semaphore::Semaphore() {
-    this->counter=0;
+Semaphore::Semaphore(){
+    this->counter = 0;
     pthread_mutex_init(&this->mutex, nullptr);
     pthread_cond_init(&this->cond, nullptr);
 }
 
-Semaphore::Semaphore(unsigned int val) {
+Semaphore::Semaphore(unsigned int val){
     this->counter=val;
     pthread_mutex_init(&this->mutex, nullptr);
     pthread_cond_init(&this->cond, nullptr);
@@ -14,7 +14,7 @@ Semaphore::Semaphore(unsigned int val) {
 
 Semaphore::~Semaphore() {
     pthread_mutex_destroy(&this->mutex);
-    pthread_cond_destroy(&this->cond);
+   pthread_cond_destroy(&this->cond);
 }
 
 void Semaphore::up() {
@@ -27,8 +27,12 @@ void Semaphore::up() {
 void Semaphore::down() {
     pthread_mutex_lock(&this->mutex);
     while (this->counter == 0){
-        pthread_cond_wait(&this->cond,&this->mutex);
+       pthread_cond_wait(&this->cond,&this->mutex);
+
+        //TODO: delete after debugging
+       //std::cout << "I am waiting in the semaphore and the count is " << this->counter << std::endl;
     }
+
     this->counter--;
     pthread_mutex_unlock(&this->mutex);
 }

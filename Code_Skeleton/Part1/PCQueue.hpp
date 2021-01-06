@@ -62,6 +62,7 @@ PCQueue<T>::~PCQueue() {
 
 template<typename T>
 void PCQueue<T>::push(const T &item) {
+
     this->producer_lock();
     this->pcQueue.push(item);
     this->producer_unlock();
@@ -70,11 +71,15 @@ void PCQueue<T>::push(const T &item) {
 
 template<typename T>
 T PCQueue<T>::pop(){
+
     this->sem.down();
+
     this->consumer_lock();
+
     T item = this->pcQueue.front(); /* queue's pop() only pops with no return value. front() returns element. */
     this->pcQueue.pop();
     this->consumer_unlock();
+
     return item;
 }
 
