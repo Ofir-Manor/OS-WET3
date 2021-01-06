@@ -1,4 +1,4 @@
-#include <utils.hpp>
+#include "utils.hpp"
 
 /*--------------------------------------------------------------------------------
 									Misc Utils Implementation
@@ -68,7 +68,7 @@ int_mat utils::read_file(const string& filename, char delimiter){
     for (auto s : lines) {
         vector<string> sp = split(s, delimiter);
         vector<uint> u_sp;
-        for(aut c : sp){
+        for(auto c : sp){
             u_sp.push_back(stoi(c));
         }
         matrix.push_back(u_sp);

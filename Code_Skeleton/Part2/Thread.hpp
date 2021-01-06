@@ -4,6 +4,7 @@
 #include "../Part1/Headers.hpp"
 #include "Task.hpp"
 #include "../Part1/PCQueue.hpp"
+
 class Thread
 {
     protected:
@@ -11,8 +12,8 @@ class Thread
         virtual void thread_workload() = 0;
         uint m_thread_id; // A number from 0 -> Number of threads initialized, providing a simple numbering for you to use
         PCQueue<Task> task_queue;
-        int *num_of_finished_tasks;
-        vector<float> m_tile_hist;
+        uint *num_of_finished_tasks;
+        vector<double> m_tile_hist;
 
     private:
         static void * entry_func(void * thread) {
@@ -23,7 +24,7 @@ class Thread
 
 
     public:
-        Thread(uint thread_id, PCQueue<Task> task_queue, int *num_of_finished_tasks, vector<float> m_tile_hist)
+        Thread(uint thread_id, PCQueue<Task> task_queue, uint *num_of_finished_tasks, vector<double> m_tile_hist)
         {
             this->m_thread_id = thread_id;
             this->task_queue = task_queue;
@@ -36,7 +37,7 @@ class Thread
         //TODO: Find out how to transfer the PCQueue
         bool start()
         {
-           return (pthread_create(&this->m_thread, nullptr, entry_func, nullptr) == 0);
+           return (pthread_create(&(this->m_thread), nullptr, (this->entry_func), (void*) &this)) == 0);
         }
 
         /** Will not return until the internal thread has exited. */
@@ -57,11 +58,13 @@ class Tasked_thread : public Thread{
 
 public:
 
-    Tasked_thread(uint thread_id, PCQueue<Task> task_queue, int *num_of_finished_tasks, vector<float> m_tile_hist):
-    Thread(thread_id, task_queue, num_of_finished_tasks, m_tile_hist){
+    Tasked_thread(uint thread_id, PCQueue<Task> task_queue, uint *num_of_finished_tasks, vector<double> m_tile_hist):
+    Thread(thread_id, task_queue, num_of_finished_tasks, m_tile_hist)
+    {
     }
 
-    ~Tasked_thread(){
+    ~Tasked_thread()
+    {
     }
 
     void thread_workload() override {

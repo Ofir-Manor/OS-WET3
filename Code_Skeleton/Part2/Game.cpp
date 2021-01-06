@@ -14,11 +14,11 @@ Game::Game(game_params p) {
     this->interactive_on = p.interactive_on;
     this->filename = p.filename;
 
-    this->m_gen_hist =new vector<float>;
-    this->m_tile_hist = new vector<float>;
-    this->m_threadpool = new vector<Thread*>;
+    this->m_gen_hist = vector<double>();
+    this->m_tile_hist = vector<double>();
+    this->m_threadpool = vector<Thread*>();
 
-    this->task_queue = new PCQueue<Task>();
+    this->task_queue = PCQueue<Task>();
 }
 
  void Game::run() {
@@ -42,7 +42,7 @@ void Game::_init_game() {
 
     // Create threads
     for (uint i = 0; i < this->m_thread_num; ++i) {
-        this->m_threadpool.push_back(new Tasked_thread(i, this->task_queue, this->num_of_finished_tasks, m_tile_hist));
+        this->m_threadpool.push_back(new Tasked_thread(i, this->task_queue, this->num_of_finished_tasks, this->m_tile_hist));
     }
     //Create Game Fields
     char delimiter = ' '; // the delimiter is space
@@ -50,8 +50,8 @@ void Game::_init_game() {
     this->next_matrix = new int_mat(utils::read_file(this->filename, delimiter));
 
     //Updates fields after create game fields
-    this->matrix_height = curr_matrix.size();
-    this->matrix_width = curr_matrix[0].size();
+    this->matrix_height = (*curr_matrix).size();
+    this->matrix_width = (*curr_matrix)[0].size();
     this->m_thread_num = std::min(this->m_thread_num, this->matrix_height);
 
 	// Start the threads
@@ -63,7 +63,7 @@ void Game::_init_game() {
     this->task_queue = PCQueue<Task>();
 
     // create and initialize counter of finished tasks
-    this->num_of_finished_tasks = new int;
+    this->num_of_finished_tasks = new uint;
     *this->num_of_finished_tasks = 0;
 
 	// Testing of your implementation will presume all threads are started here
@@ -144,17 +144,19 @@ void Game::_destroy_game(){
 
 //TODO Add all the other methods
 
-const vector<float> Game::gen_hist() const {
+const vector<double> Game::gen_hist() const {
     return this->m_gen_hist;
 }
 
-const vector<float> Game::tile_hist() const {
+const vector<double> Game::tile_hist() const {
     return this->m_tile_hist;
 }
 
 uint Game::thread_num() const {
     return this->m_thread_num;
 }
+
+Game::~Game() {}
 /*--------------------------------------------------------------------------------
 								
 --------------------------------------------------------------------------------*/

@@ -58,8 +58,8 @@ class Game {
 		int_mat *curr_matrix;
 		int_mat *next_matrix;
 		PCQueue<Task> task_queue;
-		int *num_of_finished_tasks;
-		const string filename;
+		uint *num_of_finished_tasks;
+		string filename;
 
 
 	public:

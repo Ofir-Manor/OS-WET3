@@ -26,7 +26,7 @@ void Semaphore::up() {
 
 void Semaphore::down() {
     pthread_mutex_lock(&this->mutex);
-    while (this.counter == 0){
+    while (this->counter == 0){
         pthread_cond_wait(&this->cond,&this->mutex);
     }
     this->counter--;
