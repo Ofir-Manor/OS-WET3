@@ -9,7 +9,7 @@ namespace utils {
 	vector<string> split(const string& s, char delimiter); //Splits a string
 
 	int_mat read_file(const string& filename, char delimiter);
-};
+}
 
 string repeat(string str, const size_t n);
 string operator*(string str, size_t n);

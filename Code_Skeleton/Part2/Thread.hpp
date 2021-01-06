@@ -9,7 +9,7 @@ class Thread
     protected:
         /** Implement this method in your subclass with the code you want your thread to run. */
         virtual void thread_workload() = 0;
-        uint thread_id; // A number from 0 -> Number of threads initialized, providing a simple numbering for you to use
+        uint m_thread_id; // A number from 0 -> Number of threads initialized, providing a simple numbering for you to use
         PCQueue<Task> task_queue;
         int *num_of_finished_tasks;
         vector<float> m_tile_hist;
@@ -23,9 +23,9 @@ class Thread
 
 
     public:
-        Thread(uint thread_id, &PCQueue<Task> task_queue, int *num_of_finished_tasks, &vector<float> m_tile_hist)
+        Thread(uint thread_id, PCQueue<Task> task_queue, int *num_of_finished_tasks, vector<float> m_tile_hist)
         {
-            this->thread_id = thread_id;
+            this->m_thread_id = thread_id;
             this->task_queue = task_queue;
             this->num_of_finished_tasks = num_of_finished_tasks;
             this->m_tile_hist = m_tile_hist;
@@ -48,7 +48,7 @@ class Thread
         /** Returns the thread_id **/
         uint thread_id()
         {
-            return this->thread_id;
+            return this->m_thread_id;
         }
 
 };
@@ -57,7 +57,7 @@ class Tasked_thread : public Thread{
 
 public:
 
-    Tasked_thread(uint thread_id, &PCQueue<Task> task_queue, int *num_of_finished_tasks, &vector<float> m_tile_hist):
+    Tasked_thread(uint thread_id, PCQueue<Task> task_queue, int *num_of_finished_tasks, vector<float> m_tile_hist):
     Thread(thread_id, task_queue, num_of_finished_tasks, m_tile_hist){
     }
 
@@ -79,8 +79,8 @@ public:
             uint neighb_cells[8];
 
             //foreach cell in threads matrix
-            for (int i = t.first_row; i < t.last_row; ++i) {
-                for (int j = 0; j < t.max_width; ++j) {
+            for (uint i = t.first_row; i < t.last_row; ++i) {
+                for (uint j = 0; j < t.max_width; ++j) {
 
                     //Zero variables for each cell
                     for (int space = 0; space < 8; ++space) {
@@ -90,8 +90,8 @@ public:
                     count =0;
                     sum =0;
                     //check the surrounding cells
-                    for (int k = -1; k < 2; ++k) {
-                        for (int l = -1; l < 2; ++l) {
+                    for (uint k = -1; k < 2; ++k) {
+                        for (uint l = -1; l < 2; ++l) {
 
                             //check if inside bounds
                             if ( (i + k) < 0 || (i + k) >= t.max_height || (j + l) < 0 || (j+l) >= t.max_width){
@@ -99,39 +99,39 @@ public:
                             }
 
                             //add the cell and count
-                            if(*t.curr_matrix[i+k][j+l] > 0) {
+                            if((*t.curr_matrix)[i+k][j+l] > 0) {
                                 count++;
-                                sum += *t.curr_matrix[i + k][j + l];
-                                arr[*t.curr_matrix[i+k][j+l]] ++;
+                                sum += (*t.curr_matrix)[i + k][j + l];
+                                neighb_cells[(*t.curr_matrix)[i+k][j+l]] ++;
                             }
 
                             //actions for phase 1
-                            if(t->phase == 1){
+                            if(t.phase == 1){
                                 //the cell is dead and it has three neighbors
-                                if (*t.curr_matrix[i][j] == 0 && count == 3)
+                                if ((*t.curr_matrix)[i][j] == 0 && count == 3)
                                 {
                                     uint max = 0;
                                     uint dominant = 0;
                                     //find dominant cell color
-                                    for (int m = 0; m < 8; ++m) {
-                                        if(arr[m] > max){
-                                            max = arr[m];
+                                    for (uint m = 0; m < 8; ++m) {
+                                        if(neighb_cells[m] > max){
+                                            max = neighb_cells[m];
                                             dominant = m;
                                         }
                                     }
 
-                                    *t.next_matrix[i][j] = dominant;
+                                    (*t.next_matrix)[i][j] = dominant;
                                 }
 
                                 //if the cell is alive and has two or three neighbors
                                 //because we counted the current cell we add to count 1 in order to keep alive
-                                else if (*t.curr_matrix[i][j] > 0 && (count == 4 || count == 3)){
-                                    *t.next_matrix[i][j] = *t.curr_matrix[i][j];
+                                else if ((*t.curr_matrix)[i][j] > 0 && (count == 4 || count == 3)){
+                                    (*t.next_matrix)[i][j] = (*t.curr_matrix)[i][j];
                                 }
 
                                 //if non of the above
                                 else {
-                                    *t.next_matrix[i][j] = 0;
+                                    (*t.next_matrix)[i][j] = 0;
                                 }
                             }
 
@@ -139,15 +139,15 @@ public:
                             else if (t.phase == 2){
 
                                 //if the cell is alive, amke is the average of surrounding living cells
-                                if (*t.curr_matrix[i][j] > 0){
+                                if ((*t.curr_matrix)[i][j] > 0){
                                     double avg = sum/count;
                                     uint rnd_avg = round(avg);
-                                    *t.next_matrix[i][j] = rnd_avg;
+                                    (*t.next_matrix)[i][j] = rnd_avg;
                                 }
 
                                 //if the cell is dead then keep it dead
                                 else{
-                                    *t.next_matrix[i][j] = 0;
+                                    (*t.next_matrix)[i][j] = 0;
                                 }
                             }
 

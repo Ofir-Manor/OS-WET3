@@ -1,4 +1,4 @@
- #include <Game.hpp>
+ #include "Game.hpp"
 
 
 static const char *colors[7] = {BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN};
@@ -45,13 +45,13 @@ void Game::_init_game() {
         this->m_threadpool.push_back(new Tasked_thread(i, this->task_queue, this->num_of_finished_tasks, m_tile_hist));
     }
     //Create Game Fields
-    char delimiter ' '; // the delimiter is space
+    char delimiter = ' '; // the delimiter is space
     this->curr_matrix = new int_mat(utils::read_file(this->filename, delimiter));
     this->next_matrix = new int_mat(utils::read_file(this->filename, delimiter));
 
     //Updates fields after create game fields
-    this->matrix_height = *curr_matrix.size();
-    this->matrix_width = *curr_matrix[0].size();
+    this->matrix_height = curr_matrix.size();
+    this->matrix_width = curr_matrix[0].size();
     this->m_thread_num = std::min(this->m_thread_num, this->matrix_height);
 
 	// Start the threads
@@ -91,7 +91,7 @@ void Game::_step(uint curr_gen) {
         }
 
         //create the new task
-        Task t = new Task(this->curr_matrix, this->next_matrix, i, last_row, this->matrix_height, this->matrix_width, 1);
+        Task t = Task(this->curr_matrix, this->next_matrix, i, last_row, this->matrix_height, this->matrix_width, 1);
         //put the task in the queue
         this->task_queue.push(t);
     }
@@ -118,7 +118,7 @@ void Game::_step(uint curr_gen) {
         }
 
         //create the new task
-        Task t = new Task(&this->curr_matrix, &this->next_matrix, i, last_row, this->matrix_height, this->matrix_width, 2);
+        Task t = Task(this->curr_matrix, this->next_matrix, i, last_row, this->matrix_height, this->matrix_width, 2);
         //put the task in the queue
         this->task_queue.push(t);
     }
@@ -137,9 +137,6 @@ void Game::_destroy_game(){
 	// Testing of your implementation will presume all threads are joined here
 	delete this->curr_matrix;
 	delete this->next_matrix;
-	delete this->m_tile_hist;
-	delete this->m_gen_hist;
-	delete this->task_queue;
 	delete this->num_of_finished_tasks;
 
 	//delete threads
@@ -156,7 +153,7 @@ const vector<float> Game::tile_hist() const {
 }
 
 uint Game::thread_num() const {
-    return this>m_thread_num;
+    return this->m_thread_num;
 }
 /*--------------------------------------------------------------------------------
 								

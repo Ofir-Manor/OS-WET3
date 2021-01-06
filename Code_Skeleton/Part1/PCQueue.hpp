@@ -1,6 +1,6 @@
 #ifndef _QUEUEL_H
 #define _QUEUEL_H
-#include "Headers.h"
+#include "Headers.hpp"
 #include "Semaphore.hpp"
 // Single Producer - Multiple Consumer queue
 template <typename T>class PCQueue
@@ -10,8 +10,8 @@ private:
     Semaphore sem;
     queue<T> pcQueue;
     int consumers_inside, producers_inside, producers_waiting;
-    cond_t consume_allowed;
-    cond_t produce_allowed;
+    pthread_cond_t consume_allowed;
+    pthread_cond_t produce_allowed;
     pthread_mutex_t lock;
 
     void producer_lock();
@@ -42,8 +42,8 @@ public:
 
 template<typename T>
 PCQueue<T>::PCQueue() {
-    this->sem = new Semaphore();
-    this->pcQueue = new queue<T>;
+    this->sem = Semaphore();
+    this->pcQueue = queue<T>();
     this->consumers_inside=0;
     this->producers_inside=0;
     this->producers_waiting=0;
@@ -55,8 +55,6 @@ PCQueue<T>::PCQueue() {
 
 template<typename T>
 PCQueue<T>::~PCQueue() {
-    delete this->sem;
-    delete this->pcQueue;
     pthread_mutex_destroy(&this->lock);
     pthread_cond_destroy(&this->consume_allowed);
     pthread_cond_destroy(&this->produce_allowed);
@@ -72,12 +70,12 @@ void PCQueue<T>::push(const T &item) {
 
 template<typename T>
 T PCQueue<T>::pop(){
-    this->sem.down()
+    this->sem.down();
     this->consumer_lock();
     T item = this->pcQueue.front(); /* queue's pop() only pops with no return value. front() returns element. */
     this->pcQueue.pop();
     this->consumer_unlock();
-    return T;
+    return item;
 }
 
 template<typename T>
