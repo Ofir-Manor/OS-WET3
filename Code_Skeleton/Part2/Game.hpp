@@ -52,8 +52,8 @@ class Game {
     bool print_on; // Allows the printing of the board. Turn this off when you are checking performance (Dry 3, last question)
 
     // TODO: Add in your variables and synchronization primitives
-		uint matrix_height; //keeps the height of the matrix
-		uint matrix_width;  // keeps the width of the matrix
+		int matrix_height; //keeps the height of the matrix
+		int matrix_width;  // keeps the width of the matrix
 
 		int_mat *curr_matrix;
 		int_mat *next_matrix;

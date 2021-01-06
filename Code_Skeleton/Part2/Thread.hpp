@@ -81,8 +81,10 @@ public:
             uint neighb_cells[8];
 
             //foreach cell in threads matrix
-            for (uint i = t.first_row; i < t.last_row; ++i) {
-                for (uint j = 0; j < t.max_width; ++j) {
+            for (int i = t.first_row; i < t.last_row; ++i) {
+                for (int j = 0; j < t.max_width; ++j) {
+
+
 
                     //Zero variables for each cell
                     for (int space = 0; space < 8; ++space) {
@@ -91,21 +93,26 @@ public:
 
                     count =0;
                     sum =0;
+
                     //check the surrounding cells
-                    for (uint k = -1; k < 2; ++k) {
-                        for (uint l = -1; l < 2; ++l) {
+                    for (int k = -1; k < 2; ++k)
+                    {
+                        for (int l = -1; l < 2; ++l)
+                        {
 
                             //check if inside bounds
-                            if ( (i + k) < 0 || (i + k) >= t.max_height || (j + l) < 0 || (j+l) >= t.max_width){
+                            if ((i + k) < 0 || (i + k) >= t.max_height || (j + l) < 0 || (j + l) >= t.max_width) {
                                 continue;
                             }
 
                             //add the cell and count
-                            if((*t.curr_matrix)[i+k][j+l] > 0) {
+                            if ((*t.curr_matrix)[i + k][j + l] > 0) {
                                 count++;
                                 sum += (*t.curr_matrix)[i + k][j + l];
-                                neighb_cells[(*t.curr_matrix)[i+k][j+l]] ++;
+                                neighb_cells[(*t.curr_matrix)[i + k][j + l]]++;
                             }
+                        }
+                    }
 
                             //actions for phase 1
                             if(t.phase == 1){
@@ -121,7 +128,6 @@ public:
                                             dominant = m;
                                         }
                                     }
-
                                     (*t.next_matrix)[i][j] = dominant;
                                 }
 
@@ -152,16 +158,11 @@ public:
                                     (*t.next_matrix)[i][j] = 0;
                                 }
                             }
-
-                        }
-                    }
-
                 }
 
             }
             //*num_of_finished_tasks++;
             pthread_mutex_unlock(t.mutex);
-           std::cout << "The task is finished" << endl;
 
             //TODO maybe its supposed to be (time for phase1 + time for phase2)?
             auto thread_end = std::chrono::system_clock::now();

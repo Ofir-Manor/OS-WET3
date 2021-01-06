@@ -55,7 +55,7 @@ void Game::_init_game() {
     //Updates fields after create game fields
     this->matrix_height = (*curr_matrix).size();
     this->matrix_width = (*curr_matrix)[0].size();
-    this->m_thread_num = std::min(this->m_thread_num, this->matrix_height);
+    this->m_thread_num = std::min(this->m_thread_num, (uint)this->matrix_height);
 
 	// Start the threads
     for (uint i = 0; i < this->m_thread_num; ++i) {
@@ -76,7 +76,7 @@ void Game::_init_game() {
 void Game::_step(uint curr_gen) {
 
     // Push jobs to queue: PCQ will hold tasks which will be functions to perform. Each function will get a class with all the needed information
-    uint thread_portion = this->matrix_height / this->m_thread_num;
+    int thread_portion = this->matrix_height / this->m_thread_num;
 
     //phase 1
 
@@ -92,7 +92,7 @@ void Game::_step(uint curr_gen) {
     for (uint i = 0; i < this->m_thread_num; i++) {
 
         //add the remainder rows to the last thread
-        uint last_row = (i + 1) * thread_portion;
+        int last_row = (i + 1) * thread_portion;
         if (last_row + thread_portion > this->matrix_height) {
             last_row = this->matrix_height;
         }
@@ -114,6 +114,7 @@ void Game::_step(uint curr_gen) {
     this->curr_matrix = this->next_matrix;
     this->next_matrix = temp;
 
+    //print_board(nullptr);
 
     for (uint i = 0; i < this->m_thread_num; i++) {
         pthread_mutex_unlock(&this->lock_vector[i]);
@@ -122,7 +123,7 @@ void Game::_step(uint curr_gen) {
     //phase 2
 
     //TODO: delete after debugging
-    int i = 2;
+    int i = 1;
 
     //reset finished tasks counter
     *this->num_of_finished_tasks = 0;
@@ -136,7 +137,7 @@ void Game::_step(uint curr_gen) {
     for (uint i = 0; i < this->m_thread_num; i++) {
 
         //add the remainder rows to the last thread
-        uint last_row = (i + 1) * thread_portion;
+        int last_row = (i + 1) * thread_portion;
         if (last_row + thread_portion > this->matrix_height) {
             last_row = this->matrix_height;
         }
@@ -213,9 +214,9 @@ Game::~Game() {}
          // TODO: Print the board
 
          cout << u8"╔" << string(u8"═") * this->matrix_width << u8"╗" << endl;
-         for (uint i = 0; i < this->matrix_height; ++i) {
+         for (int i = 0; i < this->matrix_height; ++i) {
              cout << u8"║";
-             for (uint j = 0; j < this->matrix_width; ++j) {
+             for (int j = 0; j < this->matrix_width; ++j) {
                  if ((*this->curr_matrix)[i][j] > 0)
                      cout << colors[(*this->curr_matrix)[i][j] % 7] << u8"█" << RESET;
                  else
