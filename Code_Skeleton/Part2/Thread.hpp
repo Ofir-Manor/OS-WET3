@@ -23,7 +23,7 @@ class Thread
 
 
     public:
-        Thread(uint thread_id, PCQueue<Task> task_queue, int *num_of_finished_tasks, vector<float> m_tile_hist)
+        Thread(uint thread_id, &PCQueue<Task> task_queue, int *num_of_finished_tasks, &vector<float> m_tile_hist)
         {
             this->thread_id = thread_id;
             this->task_queue = task_queue;
@@ -57,7 +57,7 @@ class Tasked_thread : public Thread{
 
 public:
 
-    Tasked_thread(uint thread_id, PCQueue<Task> task_queue, int *num_of_finished_tasks, vector<float> m_tile_hist):
+    Tasked_thread(uint thread_id, &PCQueue<Task> task_queue, int *num_of_finished_tasks, &vector<float> m_tile_hist):
     Thread(thread_id, task_queue, num_of_finished_tasks, m_tile_hist){
     }
 
@@ -76,11 +76,16 @@ public:
             //take out relevant information out of task
             uint count;
             uint sum;
-            uint arr[8] = {0};
+            uint neighb_cells[8];
 
             //foreach cell in threads matrix
             for (int i = t.first_row; i < t.last_row; ++i) {
                 for (int j = 0; j < t.max_width; ++j) {
+
+                    //Zero variables for each cell
+                    for (int space = 0; space < 8; ++space) {
+                        neighb_cells[space] = 0;
+                    }
 
                     count =0;
                     sum =0;
@@ -94,16 +99,16 @@ public:
                             }
 
                             //add the cell and count
-                            if(t.curr_matrix[i+k][j+l] > 0) {
+                            if(*t.curr_matrix[i+k][j+l] > 0) {
                                 count++;
-                                sum += t.curr_matrix[i + k][j + l];
-                                arr[t.curr_matrix[i+k][j+l]] ++;
+                                sum += *t.curr_matrix[i + k][j + l];
+                                arr[*t.curr_matrix[i+k][j+l]] ++;
                             }
 
                             //actions for phase 1
                             if(t->phase == 1){
                                 //the cell is dead and it has three neighbors
-                                if (t.curr_matrix[i][j] == 0 && count == 3)
+                                if (*t.curr_matrix[i][j] == 0 && count == 3)
                                 {
                                     uint max = 0;
                                     uint dominant = 0;
@@ -115,18 +120,18 @@ public:
                                         }
                                     }
 
-                                    t.next_matrix[i][j] = dominant;
+                                    *t.next_matrix[i][j] = dominant;
                                 }
 
                                 //if the cell is alive and has two or three neighbors
                                 //because we counted the current cell we add to count 1 in order to keep alive
-                                else if (t.curr_matrix[i][j] > 0 && (count == 4 || count == 3)){
-                                    t.next_matrix[i][j] = t.curr_matrix[i][j];
+                                else if (*t.curr_matrix[i][j] > 0 && (count == 4 || count == 3)){
+                                    *t.next_matrix[i][j] = *t.curr_matrix[i][j];
                                 }
 
                                 //if non of the above
                                 else {
-                                    t.next_matrix[i][j] = 0;
+                                    *t.next_matrix[i][j] = 0;
                                 }
                             }
 
@@ -134,13 +139,15 @@ public:
                             else if (t.phase == 2){
 
                                 //if the cell is alive, amke is the average of surrounding living cells
-                                if (t.curr_matrix[i][j] > 0){
-                                    t.next_matrix[i][j] = sum/count;
+                                if (*t.curr_matrix[i][j] > 0){
+                                    double avg = sum/count;
+                                    uint rnd_avg = round(avg);
+                                    *t.next_matrix[i][j] = rnd_avg;
                                 }
 
                                 //if the cell is dead then keep it dead
                                 else{
-                                    t.next_matrix[i][j] = 0;
+                                    *t.next_matrix[i][j] = 0;
                                 }
                             }
 
@@ -155,7 +162,7 @@ public:
 
             //TODO maybe its supposed to be (time for phase1 + time for phase2)?
             auto thread_end = std::chrono::system_clock::now();
-            m_tile_hist.push_back((float)std::chrono::duration_cast<std::chrono::microseconds>(thread_end - thread_start).count());
+            m_tile_hist.push_back((double)std::chrono::duration_cast<std::chrono::microseconds>(thread_end - thread_start).count());
         }
     }
 };

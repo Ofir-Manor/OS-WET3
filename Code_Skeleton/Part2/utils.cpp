@@ -62,3 +62,16 @@ string operator*(string str, size_t n)
 	return repeat(move(str), n);
 }
 
+int_mat utils::read_file(const string& filename, char delimiter){
+    int_mat matrix;
+    vector<string> lines = read_lines(filename);
+    for (auto s : lines) {
+        vector<string> sp = split(s, delimiter);
+        vector<uint> u_sp;
+        for(aut c : sp){
+            u_sp.push_back(stoi(c));
+        }
+        matrix.push_back(u_sp);
+    }
+    return matrix;
+}

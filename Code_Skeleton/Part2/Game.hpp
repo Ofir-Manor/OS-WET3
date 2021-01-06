@@ -55,10 +55,11 @@ class Game {
 		uint matrix_height; //keeps the height of the matrix
 		uint matrix_width;  // keeps the width of the matrix
 
-		uint curr_matrix[][];
-		uint next_matrix[][];
+		int_mat *curr_matrix;
+		int_mat *next_matrix;
 		PCQueue<Task> task_queue;
 		int *num_of_finished_tasks;
+		const string filename;
 
 
 	public:

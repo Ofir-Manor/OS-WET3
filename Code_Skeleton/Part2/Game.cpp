@@ -6,31 +6,13 @@ static const char *colors[7] = {BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN};
 
 --------------------------------------------------------------------------------*/
 Game::Game(game_params p) {
-    //create the first matrix as vector of strings
-
-    //TODO maybe move matrix creation and everything that isnt game_params-p-related to init_game?
-    vector<string> matrix_vecotr = utils::read_line(const p.filename);
-    this->matrix_height = matrix_rows.size();
-    this->matrix_width = (matrix_rows[0].size()/2) +1;
-
-    this->first_matrix = new uint[matrix_height][matrix_width];
-
-    uint temp;
-    char space = ' ';
-
-    for (int i=0; i<matrix_height; i++){
-        vector<string> matrix_row = utils::split(matrix_vecotr[i], const space);
-        for (int j=0; j<matrix_width; j++){
-            string cell = matrix_row[j];
-            temp = std::stoi(cell);
-            first_matrix[i][j] = temp;
-        }
-    }
+    //saves all relevant information from game params
 
     this->m_gen_num = p.n_gen;
-    this->m_thread_num = std::min(const p.n_thread, const this->matrix_height);
+    this->m_thread_num = p.n_thread;
     this->print_on = p.print_on;
     this->interactive_on = p.interactive_on;
+    this->filename = p.filename;
 
     this->m_gen_hist =new vector<float>;
     this->m_tile_hist = new vector<float>;
@@ -60,9 +42,17 @@ void Game::_init_game() {
 
     // Create threads
     for (uint i = 0; i < this->m_thread_num; ++i) {
-        this->m_threadpool.push_back(new Tasked_thread(i, this->task_queue, this->num_of_finished_tasks));
+        this->m_threadpool.push_back(new Tasked_thread(i, this->task_queue, this->num_of_finished_tasks, m_tile_hist));
     }
-    //Create Game Fields (Currently in constructor)
+    //Create Game Fields
+    char delimiter ' '; // the delimiter is space
+    this->curr_matrix = new int_mat(utils::read_file(this->filename, delimiter));
+    this->next_matrix = new int_mat(utils::read_file(this->filename, delimiter));
+
+    //Updates fields after create game fields
+    this->matrix_height = *curr_matrix.size();
+    this->matrix_width = *curr_matrix[0].size();
+    this->m_thread_num = std::min(this->m_thread_num, this->matrix_height);
 
 	// Start the threads
     for (uint i = 0; i < this->m_thread_num; ++i) {
@@ -70,7 +60,7 @@ void Game::_init_game() {
     }
 
     // create task queue
-    this->task_queue = new PCQueue<Task>();
+    this->task_queue = PCQueue<Task>();
 
     // create and initialize counter of finished tasks
     this->num_of_finished_tasks = new int;
@@ -90,6 +80,7 @@ void Game::_step(uint curr_gen) {
     //reset finished tasks counter
     *this->num_of_finished_tasks = 0;
 
+    //add the tasks to PCQueue (Threads should automatically receive tasks and start working)
     for (uint i = 0; i < this->matrix_height; i += thread_portion){
 
         //add the remainder rows to the last thread
@@ -100,20 +91,23 @@ void Game::_step(uint curr_gen) {
         }
 
         //create the new task
-        Task t = new Task(&this->curr_matrix, &this->next_matrix, i, last_row, this->matrix_height, this->matrix_width, 1);
+        Task t = new Task(this->curr_matrix, this->next_matrix, i, last_row, this->matrix_height, this->matrix_width, 1);
         //put the task in the queue
         this->task_queue.push(t);
     }
 
 	// Wait for the workers to finish calculating phase 1
-    while(*this->num_of_finished_tasks<this->m_thread_num){};
+    while(*this->num_of_finished_tasks < this->m_thread_num){};
 
     // Swap pointers between current and next field
     this->curr_matrix = this->next_matrix;
 
-
     //phase 2
 
+    //reset finished tasks counter
+    *this->num_of_finished_tasks = 0;
+
+    //add the tasks to PCQueue (Threads should automatically receive tasks and start working)
     for (uint i = 0; i < this->matrix_height; i += thread_portion){
 
         //add the remainder rows to the last thread
@@ -130,6 +124,7 @@ void Game::_step(uint curr_gen) {
     }
 
     // Wait for the workers to finish calculating phase 2
+    while(*this->num_of_finished_tasks < this->m_thread_num){};
 
     // Swap pointers between current and next field
     this->curr_matrix = this->next_matrix;
