@@ -24,8 +24,16 @@ Game::Game(game_params p) {
  void Game::run() {
 
      _init_game(); // Starts the threads and all other variables you need
+     //TODO: delete this after debugging
+     std::cout << "I have started the game" << std::endl;
+
      print_board("Initial Board");
+
      for (uint i = 0; i < m_gen_num; ++i) {
+
+         //TODO: delete this after debugging
+         std::cout << "I am in generation " << i << std::endl;
+
          auto gen_start = std::chrono::system_clock::now();
          _step(i); // Iterates a single generation
          auto gen_end = std::chrono::system_clock::now();
@@ -76,6 +84,8 @@ void Game::_step(uint curr_gen) {
     uint thread_portion = this->matrix_height/this->m_thread_num;
 
     //phase 1
+    //TODO: delete this after debugging
+    std::cout << "I am in phase 1 of generation " << curr_gen << std::endl;
 
     //reset finished tasks counter
     *this->num_of_finished_tasks = 0;
@@ -103,6 +113,9 @@ void Game::_step(uint curr_gen) {
     this->curr_matrix = this->next_matrix;
 
     //phase 2
+
+    //TODO: delete this after debugging
+    std::cout << "I am in phase 2 of generation " << curr_gen << std::endl;
 
     //reset finished tasks counter
     *this->num_of_finished_tasks = 0;
@@ -164,15 +177,33 @@ Game::~Game() {}
 
      if(print_on){
 
+         //TODO: delete this after debugging
+         std::cout << "Print on in on" << std::endl;
          // Clear the screen, to create a running animation
          if(interactive_on)
              system("clear");
+
+         //TODO: delete this after debugging
+         std::cout << "interactive is on" << std::endl;
 
          // Print small header if needed
          if (header != nullptr)
              cout << "<------------" << header << "------------>" << endl;
 
          // TODO: Print the board
+
+         cout << u8"╔" << string(u8"═") * this->matrix_width << u8"╗" << endl;
+         for (uint i = 0; i < this->matrix_height; ++i) {
+             cout << u8"║";
+             for (uint j = 0; j < this->matrix_width; ++j) {
+                 if ((*this->curr_matrix)[i][j] > 0)
+                     cout << colors[(*this->curr_matrix)[i][j] % 7] << u8"█" << RESET;
+                 else
+                     cout << u8"░";
+             }
+             cout << u8"║" << endl;
+         }
+         cout << u8"╚" << string(u8"═") * this->matrix_width << u8"╝" << endl;
 
          // Display for GEN_SLEEP_USEC micro-seconds on screen
          if(interactive_on)

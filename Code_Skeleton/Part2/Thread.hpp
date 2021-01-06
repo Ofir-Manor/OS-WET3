@@ -37,6 +37,9 @@ class Thread
         //TODO: Find out how to transfer the PCQueue
         bool start()
         {
+            //TODO: Delete after debugging
+            std::cout << "Thread "  << this->m_thread_id << " is started" << std::endl;
+
            return (pthread_create(&(this->m_thread), nullptr, (this->entry_func), (void*) this) == 0);
         }
 
@@ -68,6 +71,8 @@ public:
     }
 
     void thread_workload() override {
+        //TODO: Delete after debugging
+        std::cout << "I have arrived at my function" << std::endl;
         //perform from init to end
         while (1) {
             //take task out of pcqueue (if non then pcqueue should stop you)
