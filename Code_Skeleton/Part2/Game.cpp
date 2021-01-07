@@ -44,7 +44,7 @@ void Game::_init_game() {
 
     // Create threads
     for (uint i = 0; i < this->m_thread_num; ++i) {
-        this->m_threadpool.push_back(new Tasked_thread(i, this->task_queue, this->num_of_finished_tasks, this->m_tile_hist));
+        this->m_threadpool.push_back(new Tasked_thread(i, this->task_queue, this->m_tile_hist));
     }
     //Create Game Fields
     char delimiter = ' '; // the delimiter is space
@@ -62,15 +62,7 @@ void Game::_init_game() {
         this->m_threadpool[i]->start();
     }
 
-
-    // create and initialize counter of finished tasks
-    this->num_of_finished_tasks = new uint;
-    *this->num_of_finished_tasks = 0;
-
     this->lock_vector = vector<pthread_mutex_t>(this->m_thread_num);
-
-	// Testing of your implementation will presume all threads are started here
-
 }
 
 void Game::_step(uint curr_gen) {
@@ -79,9 +71,6 @@ void Game::_step(uint curr_gen) {
     int thread_portion = this->matrix_height / this->m_thread_num;
 
     //phase 1
-
-    //reset finished tasks counter
-    *this->num_of_finished_tasks = 0;
 
     //lock all locks before handing out tasks
     for (uint i = 0; i < this->m_thread_num; i++) {
@@ -114,19 +103,11 @@ void Game::_step(uint curr_gen) {
     this->curr_matrix = this->next_matrix;
     this->next_matrix = temp;
 
-    //print_board(nullptr);
-
     for (uint i = 0; i < this->m_thread_num; i++) {
         pthread_mutex_unlock(&this->lock_vector[i]);
     }
 
     //phase 2
-
-    //TODO: delete after debugging
-    int i = 1;
-
-    //reset finished tasks counter
-    *this->num_of_finished_tasks = 0;
 
     //lock all locks before handing out tasks
     for (uint i = 0; i < this->m_thread_num; i++) {
@@ -150,12 +131,6 @@ void Game::_step(uint curr_gen) {
         this->task_queue->push(t);
     }
 
-    // Wait for the workers to finish calculating phase 1
-    //  while(*this->num_of_finished_tasks < this->m_thread_num){
-    //TODO: Delete after debugging
-    //  std::cout << "I am stuck here forever and my value is " << *this->num_of_finished_tasks << endl;
-    // };
-
     for (uint i = 0; i < this->m_thread_num; i++) {
         pthread_mutex_lock(&this->lock_vector[i]);
     }
@@ -175,9 +150,11 @@ void Game::_destroy_game(){
 	// Testing of your implementation will presume all threads are joined here
 	delete this->curr_matrix;
 	delete this->next_matrix;
-	delete this->num_of_finished_tasks;
 
 	//delete threads
+    for (uint i = 0; i < this->m_thread_num; ++i) {
+        this->m_threadpool[i]->join();
+    }
 }
 
 //TODO Add all the other methods

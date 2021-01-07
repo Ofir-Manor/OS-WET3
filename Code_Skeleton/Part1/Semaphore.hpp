@@ -4,11 +4,10 @@
 // Synchronization Warm up 
 class Semaphore {
 
-    //TODO: make private after
-public:
     int counter;
     pthread_mutex_t mutex;
     pthread_cond_t cond;
+
 public:
 	Semaphore(); // Constructs a new semaphore with a counter of 0
 	Semaphore(unsigned val); // Constructs a new semaphore with a counter of val

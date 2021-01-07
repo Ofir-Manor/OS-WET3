@@ -12,7 +12,6 @@ class Thread
         virtual void thread_workload() = 0;
         uint m_thread_id; // A number from 0 -> Number of threads initialized, providing a simple numbering for you to use
         PCQueue<Task> *task_queue;
-        uint *num_of_finished_tasks;
         vector<double> m_tile_hist;
 
     private:
@@ -24,11 +23,10 @@ class Thread
 
 
     public:
-        Thread(uint thread_id, PCQueue<Task> *task_queue, uint *num_of_finished_tasks, vector<double> m_tile_hist)
+        Thread(uint thread_id, PCQueue<Task> *task_queue, vector<double> m_tile_hist)
         {
             this->m_thread_id = thread_id;
             this->task_queue = task_queue;
-            this->num_of_finished_tasks = num_of_finished_tasks;
             this->m_tile_hist = m_tile_hist;
         }
         virtual ~Thread() {} // Does nothing
@@ -43,7 +41,7 @@ class Thread
         /** Will not return until the internal thread has exited. */
         void join()
         {
-            pthread_join(this->m_thread, nullptr);
+            pthread_cancel(this->m_thread);
         }
 
         /** Returns the thread_id **/
@@ -58,8 +56,8 @@ class Tasked_thread : public Thread{
 
 public:
 
-    Tasked_thread(uint thread_id, PCQueue<Task> *task_queue, uint *num_of_finished_tasks, vector<double> m_tile_hist):
-    Thread(thread_id, task_queue, num_of_finished_tasks, m_tile_hist)
+    Tasked_thread(uint thread_id, PCQueue<Task> *task_queue, vector<double> m_tile_hist):
+    Thread(thread_id, task_queue, m_tile_hist)
     {
     }
 
@@ -84,8 +82,6 @@ public:
             for (int i = t.first_row; i < t.last_row; ++i) {
                 for (int j = 0; j < t.max_width; ++j) {
 
-
-
                     //Zero variables for each cell
                     for (int space = 0; space < 8; ++space) {
                         neighb_cells[space] = 0;
@@ -99,12 +95,10 @@ public:
                     {
                         for (int l = -1; l < 2; ++l)
                         {
-
                             //check if inside bounds
                             if ((i + k) < 0 || (i + k) >= t.max_height || (j + l) < 0 || (j + l) >= t.max_width) {
                                 continue;
                             }
-
                             //add the cell and count
                             if ((*t.curr_matrix)[i + k][j + l] > 0) {
                                 count++;

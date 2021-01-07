@@ -51,17 +51,15 @@ class Game {
     bool interactive_on; // Controls interactive mode - that means, prints the board as an animation instead of a simple dump to STDOUT
     bool print_on; // Allows the printing of the board. Turn this off when you are checking performance (Dry 3, last question)
 
-    // TODO: Add in your variables and synchronization primitives
-		int matrix_height; //keeps the height of the matrix
-		int matrix_width;  // keeps the width of the matrix
+    int matrix_height; //keeps the height of the matrix
+    int matrix_width;  // keeps the width of the matrix
 
-		int_mat *curr_matrix;
-		int_mat *next_matrix;
-		PCQueue<Task>* task_queue;
-		uint *num_of_finished_tasks;
-		string filename;
+    int_mat *curr_matrix;
+    int_mat *next_matrix;
+    PCQueue<Task>* task_queue;
+    string filename;
 
-		vector<pthread_mutex_t> lock_vector;
+    vector<pthread_mutex_t> lock_vector;
 
 
 	public:

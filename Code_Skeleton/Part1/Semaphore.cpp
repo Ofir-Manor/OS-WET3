@@ -28,11 +28,7 @@ void Semaphore::down() {
     pthread_mutex_lock(&this->mutex);
     while (this->counter == 0){
        pthread_cond_wait(&this->cond,&this->mutex);
-
-        //TODO: delete after debugging
-       //std::cout << "I am waiting in the semaphore and the count is " << this->counter << std::endl;
     }
-
     this->counter--;
     pthread_mutex_unlock(&this->mutex);
 }
