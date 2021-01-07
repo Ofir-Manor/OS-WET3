@@ -56,10 +56,13 @@ class Game {
 
     int_mat *curr_matrix;
     int_mat *next_matrix;
-    PCQueue<Task>* task_queue;
+    PCQueue<Task*>* task_queue;
     string filename;
 
-    vector<pthread_mutex_t> lock_vector;
+    Semaphore synch_sem;
+
+    pthread_mutex_t tile_hist_lock;
+    pthread_mutex_t uni_thread_lock;
 
 
 	public:

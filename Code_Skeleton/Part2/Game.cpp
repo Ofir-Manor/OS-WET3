@@ -6,8 +6,8 @@ static const char *colors[7] = {BLACK, RED, GREEN, YELLOW, BLUE, MAGENTA, CYAN};
 
 --------------------------------------------------------------------------------*/
 Game::Game(game_params p) {
-    //saves all relevant information from game params
 
+    //saves all relevant information from game params
     this->m_gen_num = p.n_gen;
     this->m_thread_num = p.n_thread;
     this->print_on = p.print_on;
@@ -17,9 +17,13 @@ Game::Game(game_params p) {
     this->m_gen_hist = vector<double>();
     this->m_tile_hist = vector<double>();
     this->m_threadpool = vector<Thread*>();
-    this->lock_vector = vector<pthread_mutex_t>();
 
-     this->task_queue = new PCQueue<Task>;
+     this->task_queue = new PCQueue<Task*>;
+
+     this->synch_sem = Semaphore();
+
+     pthread_mutex_init(&this->tile_hist_lock, nullptr);
+     pthread_mutex_init(&this->uni_thread_lock, nullptr);
 }
 
  void Game::run() {
@@ -44,7 +48,7 @@ void Game::_init_game() {
 
     // Create threads
     for (uint i = 0; i < this->m_thread_num; ++i) {
-        this->m_threadpool.push_back(new Tasked_thread(i, this->task_queue, this->m_tile_hist));
+        this->m_threadpool.push_back(new Tasked_thread(i, this->task_queue, &this->m_tile_hist, &uni_thread_lock));
     }
     //Create Game Fields
     char delimiter = ' '; // the delimiter is space
@@ -61,8 +65,7 @@ void Game::_init_game() {
     for (uint i = 0; i < this->m_thread_num; ++i) {
         this->m_threadpool[i]->start();
     }
-
-    this->lock_vector = vector<pthread_mutex_t>(this->m_thread_num);
+    
 }
 
 void Game::_step(uint curr_gen) {
@@ -73,9 +76,6 @@ void Game::_step(uint curr_gen) {
     //phase 1
 
     //lock all locks before handing out tasks
-    for (uint i = 0; i < this->m_thread_num; i++) {
-        pthread_mutex_lock(&this->lock_vector[i]);
-    }
 
     //add the tasks to PCQueue (Threads should automatically receive tasks and start working)
     for (uint i = 0; i < this->m_thread_num; i++) {
@@ -87,33 +87,22 @@ void Game::_step(uint curr_gen) {
         }
 
         //create the new task
-        Task t = Task(this->curr_matrix, this->next_matrix, i * thread_portion, last_row, this->matrix_height,
-                      this->matrix_width, 1, &this->lock_vector[i]);
+        Task* t = new Task(this->curr_matrix, this->next_matrix, i * thread_portion, last_row, this->matrix_height,
+                      this->matrix_width, 1, &this->synch_sem, &this->tile_hist_lock);
 
         //put the task in the queue
         this->task_queue->push(t);
     }
 
     for (uint i = 0; i < this->m_thread_num; i++) {
-        pthread_mutex_lock(&this->lock_vector[i]);
-    }
+        this->synch_sem.down();
+   }
 
     // Swap pointers between current and next field
     int_mat *temp = this->curr_matrix;
     this->curr_matrix = this->next_matrix;
     this->next_matrix = temp;
 
-    for (uint i = 0; i < this->m_thread_num; i++) {
-        pthread_mutex_unlock(&this->lock_vector[i]);
-    }
-
-    //phase 2
-
-    //lock all locks before handing out tasks
-    for (uint i = 0; i < this->m_thread_num; i++) {
-        pthread_mutex_lock(&this->lock_vector[i]);
-    }
-
     //add the tasks to PCQueue (Threads should automatically receive tasks and start working)
     for (uint i = 0; i < this->m_thread_num; i++) {
 
@@ -124,25 +113,24 @@ void Game::_step(uint curr_gen) {
         }
 
         //create the new task
-        Task t = Task(this->curr_matrix, this->next_matrix, i * thread_portion, last_row, this->matrix_height,
-                      this->matrix_width, 2, &this->lock_vector[i]);
+        Task* t = new Task(this->curr_matrix, this->next_matrix, i * thread_portion, last_row, this->matrix_height,
+                      this->matrix_width, 2, &this->synch_sem, &this->tile_hist_lock);
 
         //put the task in the queue
         this->task_queue->push(t);
     }
 
+
     for (uint i = 0; i < this->m_thread_num; i++) {
-        pthread_mutex_lock(&this->lock_vector[i]);
+        this->synch_sem.down();
     }
+
 
     // Swap pointers between current and next field
     int_mat *temp_matrix = this->curr_matrix;
     this->curr_matrix = this->next_matrix;
     this->next_matrix = temp_matrix;
 
-    for (uint i = 0; i < this->m_thread_num; i++) {
-        pthread_mutex_unlock(&this->lock_vector[i]);
-    }
 }
 void Game::_destroy_game(){
 	// Destroys board and frees all threads and resources 

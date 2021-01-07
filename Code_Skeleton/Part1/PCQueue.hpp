@@ -7,6 +7,7 @@ template <typename T>class PCQueue
 {
 private:
 
+public:
     Semaphore sem;
     queue<T> pcQueue;
     int consumers_inside, producers_inside, producers_waiting;
@@ -42,6 +43,7 @@ public:
 
 template<typename T>
 PCQueue<T>::PCQueue() {
+
     this->sem = Semaphore();
     this->pcQueue = queue<T>();
     this->consumers_inside=0;
@@ -65,19 +67,25 @@ void PCQueue<T>::push(const T &item) {
 
     this->producer_lock();
     this->pcQueue.push(item);
+
     this->producer_unlock();
+
     this->sem.up();
+
 }
 
 template<typename T>
 T PCQueue<T>::pop(){
-
     this->sem.down();
 
     this->consumer_lock();
-
+    if(pcQueue.empty()) {
+        std::cout << "I am empty and trying to pop" << std::endl;
+    }
     T item = this->pcQueue.front(); /* queue's pop() only pops with no return value. front() returns element. */
+    std::cout << "I am in pop function before pop" << std::endl;
     this->pcQueue.pop();
+    std::cout << "I am in pop function after pop" << std::endl;
     this->consumer_unlock();
 
     return item;

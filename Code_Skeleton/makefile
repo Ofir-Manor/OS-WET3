@@ -5,7 +5,7 @@ TARGET := GameOfLife
 
 CXX := g++
 CXXFLAGS := -std=c++11 -g -Wall -pedantic-errors -lpthread -pthread
-LDFLAGS := -lpthread -static-libstdc++
+LDFLAGS := -lpthread -pthread -static-libstdc++
 RM := rm -f
 
 SRC := $(shell find . -name "*.cpp")
