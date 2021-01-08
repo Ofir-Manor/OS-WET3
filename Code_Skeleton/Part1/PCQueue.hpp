@@ -79,13 +79,8 @@ T PCQueue<T>::pop(){
     this->sem.down();
 
     this->consumer_lock();
-    if(pcQueue.empty()) {
-        std::cout << "I am empty and trying to pop" << std::endl;
-    }
     T item = this->pcQueue.front(); /* queue's pop() only pops with no return value. front() returns element. */
-    std::cout << "I am in pop function before pop" << std::endl;
     this->pcQueue.pop();
-    std::cout << "I am in pop function after pop" << std::endl;
     this->consumer_unlock();
 
     return item;
